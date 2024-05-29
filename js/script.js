@@ -107,71 +107,104 @@ const asignarPosicion = async (jugadorID) => {
 // Función asíncrona para realizar un cambio durante un partido
 const realizarCambio = async () => {
     try {
-        // Implementación para realizar un cambio durante un partido
-        let plantilla = document.getElementById('plantilla')
-        // Implementación para listar todos los jugadores
+        let plantilla = document.getElementById('plantilla');
         plantilla.innerHTML = '';
         let jugadores = obtenerJugadoresLocalStorage();
-        let jugadoresTitulares = jugadores.filter((jugador) => jugador.estado === 'Titular')
-        let jugadoresSuplentes = jugadores.filter((jugador) => jugador.estado === 'Suplente')
 
-        const selectTitulares = document.createElement('select')
+        if (!Array.isArray(jugadores)) {
+            throw new Error('Invalid player list from local storage');
+        }
+
+        let jugadoresTitulares = jugadores.filter((jugador) => jugador.estado === 'Titular');
+        let jugadoresSuplentes = jugadores.filter((jugador) => jugador.estado === 'Suplente');
+
+        const selectTitulares = document.createElement('select');
         selectTitulares.id = 'selectTitulares';
-        selectTitulares.className = 'form-select m-3'
-        plantilla.appendChild(selectTitulares)
+        selectTitulares.className = 'form-select m-3';
+        plantilla.appendChild(selectTitulares);
 
         jugadoresTitulares.forEach(jugador => {
-            const jugadorTitular = document.createElement('option')
-            jugadorTitular.setAttribute('value',`${jugador.id}`)
-            jugadorTitular.innerHTML = `${jugador.nombre}`
-            selectTitulares.appendChild(jugadorTitular)
-        })
+            const jugadorTitular = document.createElement('option');
+            jugadorTitular.setAttribute('value', `${jugador.id}`);
+            jugadorTitular.innerHTML = `${jugador.nombre}`;
+            selectTitulares.appendChild(jugadorTitular);
+        });
 
-        const selectSuplentes = document.createElement('select')
+        const selectSuplentes = document.createElement('select');
         selectSuplentes.id = 'selectSuplentes';
-        selectSuplentes.className = 'form-select m-3'
-        plantilla.appendChild(selectSuplentes)
-        jugadoresSuplentes.forEach(jugador => {
-            const jugadorSuplente = document.createElement('option')
-            jugadorSuplente.setAttribute('value',`${jugador.id}`)
-            jugadorSuplente.innerHTML = (`<option>${jugador.nombre}</option>`)
-            selectSuplentes.appendChild(jugadorSuplente)
-        })
+        selectSuplentes.className = 'form-select m-3';
+        plantilla.appendChild(selectSuplentes);
 
-        const button = document.createElement('button')
+        jugadoresSuplentes.forEach(jugador => {
+            const jugadorSuplente = document.createElement('option');
+            jugadorSuplente.setAttribute('value', `${jugador.id}`);
+            jugadorSuplente.innerHTML = `${jugador.nombre}`;
+            selectSuplentes.appendChild(jugadorSuplente);
+        });
+
+        if (selectTitulares.options.length === 0 || selectSuplentes.options.length === 0) {
+            throw new Error('Select elements are empty');
+        }
+
+        const button = document.createElement('button');
         button.innerHTML = 'Realizar Cambio';
         button.className = 'btn btn-success mt-3';
         button.onclick = confirmarCambio;
         plantilla.appendChild(button);
 
     } catch (error) {
-        console.error('Error:', error.message)
+        console.error('Error:', error.message);
     }
-
 };
+
 
 const confirmarCambio = async () => {
     try {
         let selectTitulares = document.getElementById('selectTitulares');
         let selectSuplentes = document.getElementById('selectSuplentes');
         
+        if (!selectTitulares || !selectSuplentes) {
+            throw new Error('Select elements not found');
+        }
+
         const jugadorEntranteID = parseInt(selectSuplentes.value);
         const jugadorSalienteID = parseInt(selectTitulares.value);
+        
+        if (isNaN(jugadorEntranteID) || isNaN(jugadorSalienteID)) {
+            throw new Error('Invalid player ID');
+        }
 
         let jugadores = obtenerJugadoresLocalStorage();
 
+        if (!Array.isArray(jugadores)) {
+            throw new Error('Invalid player list from local storage');
+        }
+
         let jugadorEntrante = jugadores.find(jugador => jugador.id === jugadorEntranteID);
         let jugadorSaliente = jugadores.find(jugador => jugador.id === jugadorSalienteID);
+
+        if (!jugadorEntrante || !jugadorSaliente) {
+            throw new Error('Player not found');
+        }
+
+        console.log('Jugador entrante antes de cambio:', jugadorEntrante);
+        console.log('Jugador saliente antes de cambio:', jugadorSaliente);
+
         jugadorEntrante.estado = 'Titular';
         jugadorSaliente.estado = 'Suplente';
+
+        console.log('Jugador entrante después de cambio:', jugadorEntrante);
+        console.log('Jugador saliente después de cambio:', jugadorSaliente);
+
         actualizarJugadorLocalStorage(jugadorEntrante);
         actualizarJugadorLocalStorage(jugadorSaliente);
 
         await listarPlantilla();
     } catch (error) {
-        console.error('Error:', error.message)
+        console.error('Error:', error.message);
     }
 }
+
 
 // Función principal asíncrona que interactúa con el usuario
 const main = async () => {
