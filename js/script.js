@@ -9,7 +9,14 @@ const guardarJugadoresLocalStorage = (jugadores) => {
     localStorage.setItem('jugadores', JSON.stringify(jugadores));
 };
 
-// Funcion para actualizar un jugador en el localStorage
+// Función para obtener un nuevo ID único
+const obtenerNuevoID = () => {
+    const jugadores = obtenerJugadoresLocalStorage();
+    const ids = jugadores.map(jugador => jugador.id);
+    return ids.length ? Math.max(...ids) + 1 : 1;
+};
+
+// Función para actualizar un jugador en el localStorage
 const actualizarJugadorLocalStorage = (jugador) => {
     const jugadores = obtenerJugadoresLocalStorage();
     const jugadorActualizado = jugadores.findIndex((j) => j.id === jugador.id);
@@ -35,8 +42,11 @@ const agregarJugador = async () => {
             throw new Error('El jugador ya está en el equipo.');
         }
 
+        // Obtener un nuevo ID único para el jugador
+        const nuevoID = obtenerNuevoID();
+
         // Agregar el nuevo jugador al array de jugadores
-        jugadores.push({ nombre, edad, posicion, estado });
+        jugadores.push({ id: nuevoID, nombre, edad, posicion, estado });
 
         // Guardar los jugadores actualizados en el localStorage
         guardarJugadoresLocalStorage(jugadores);
@@ -51,7 +61,6 @@ const agregarJugador = async () => {
     }
 };
 
-
 // Función asíncrona para listar todos los jugadores del equipo
 const listarJugadores = async () => {
     try {
@@ -59,33 +68,27 @@ const listarJugadores = async () => {
         // Implementación para listar todos los jugadores
         plantilla.innerHTML = '';
         let jugadores = obtenerJugadoresLocalStorage();
-        //mostrar jugadores
+        // Mostrar jugadores
         jugadores.forEach(jugador => {
             const jugador_li = document.createElement('li')
             jugador_li.className = 'jugador';
             jugador_li.innerHTML = `
-        <div class="card mt-3">
-            <h5 class="card-header">Nombre: ${jugador.nombre}</h5>
-            <div class="card-body">
-                <p class="card-text">Edad: ${jugador.edad}</p>
-                <p class="card-text">Posicion: ${jugador.posicion}</p>
-                <p class="card-text">Estado: ${jugador.estado}</p>
-                <button onclick="asignarPosicion(${jugador.id})"
-                type="button"
-                class="btn btn-success"
-            >
-                Cambiar Posicion
-            </button>
-            </div>
-        </div>
-    `;
-            plantilla.appendChild(jugador_li)
+                <div class="card mt-3">
+                    <h5 class="card-header">Nombre: ${jugador.nombre}</h5>
+                    <div class="card-body">
+                        <p class="card-text">Edad: ${jugador.edad}</p>
+                        <p class="card-text">Posicion: ${jugador.posicion}</p>
+                        <p class="card-text">Estado: ${jugador.estado}</p>
+                        <button onclick="asignarPosicion(${jugador.id})" type="button" class="btn btn-success">Cambiar Posicion</button>
+                    </div>
+                </div>
+            `;
+            plantilla.appendChild(jugador_li);
         });
         await new Promise(resolve => setInterval(resolve, 1000));
     } catch (error) {
         console.error('Error:', error.message);
     }
-
 };
 
 // Función asíncrona para asignar una nueva posición a un jugador
@@ -94,7 +97,7 @@ const asignarPosicion = async (jugadorID) => {
         // Implementación para asignar una nueva posición a un jugador
         let jugadores = obtenerJugadoresLocalStorage();
         let jugador = jugadores.find(jugador => jugador.id === jugadorID);
-        nuevaPosicion = prompt('Ingresa la nueva posicion')
+        nuevaPosicion = prompt('Ingresa la nueva posicion');
         jugador.posicion = nuevaPosicion;
         actualizarJugadorLocalStorage(jugador);
         listarJugadores();
@@ -157,19 +160,18 @@ const realizarCambio = async () => {
     }
 };
 
-
 const confirmarCambio = async () => {
     try {
         let selectTitulares = document.getElementById('selectTitulares');
         let selectSuplentes = document.getElementById('selectSuplentes');
-        
+
         if (!selectTitulares || !selectSuplentes) {
             throw new Error('Select elements not found');
         }
 
         const jugadorEntranteID = parseInt(selectSuplentes.value);
         const jugadorSalienteID = parseInt(selectTitulares.value);
-        
+
         if (isNaN(jugadorEntranteID) || isNaN(jugadorSalienteID)) {
             throw new Error('Invalid player ID');
         }
@@ -199,12 +201,11 @@ const confirmarCambio = async () => {
         actualizarJugadorLocalStorage(jugadorEntrante);
         actualizarJugadorLocalStorage(jugadorSaliente);
 
-        await listarPlantilla();
+        await listarJugadores();
     } catch (error) {
         console.error('Error:', error.message);
     }
 }
-
 
 // Función principal asíncrona que interactúa con el usuario
 const main = async () => {
