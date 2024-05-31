@@ -10,11 +10,11 @@ const guardarJugadoresLocalStorage = (jugadores) => {
 };
 
 // Función para obtener un nuevo ID único
-const obtenerNuevoID = () => {
-    const jugadores = obtenerJugadoresLocalStorage();
-    const ids = jugadores.map(jugador => jugador.id);
-    return ids.length ? Math.max(...ids) + 1 : 1;
-};
+// const obtenerNuevoID = () => {
+//     const jugadores = obtenerJugadoresLocalStorage();
+//     const ids = jugadores.map(jugador => jugador.id); 
+//     return ids.length ? Math.max(...ids) + 1 : 1;
+// };
 
 // Función para actualizar un jugador en el localStorage
 const actualizarJugadorLocalStorage = (jugador) => {
@@ -43,10 +43,10 @@ const agregarJugador = async () => {
         }
 
         // Obtener un nuevo ID único para el jugador
-        const nuevoID = obtenerNuevoID();
+        //const nuevoID = obtenerNuevoID();
 
         // Agregar el nuevo jugador al array de jugadores
-        jugadores.push({ id: nuevoID, nombre, edad, posicion, estado });
+        jugadores.push({ id: jugadores.length, nombre, edad, posicion, estado });   //No me habia dado cuenta que no pasaba el ID, aca lo acomode sin usar la funcion
 
         // Guardar los jugadores actualizados en el localStorage
         guardarJugadoresLocalStorage(jugadores);
@@ -102,6 +102,8 @@ const asignarPosicion = async (jugadorID) => {
         actualizarJugadorLocalStorage(jugador);
         listarJugadores();
         await new Promise(resolve => setInterval(resolve, 1000));
+        // Mostrar un mensaje de éxito
+        alert('Posicion modificada correctamente.');
     } catch (error) {
         console.error('Error:', error.message);
     }
@@ -113,10 +115,6 @@ const realizarCambio = async () => {
         let plantilla = document.getElementById('plantilla');
         plantilla.innerHTML = '';
         let jugadores = obtenerJugadoresLocalStorage();
-
-        if (!Array.isArray(jugadores)) {
-            throw new Error('Invalid player list from local storage');
-        }
 
         let jugadoresTitulares = jugadores.filter((jugador) => jugador.estado === 'Titular');
         let jugadoresSuplentes = jugadores.filter((jugador) => jugador.estado === 'Suplente');
@@ -145,10 +143,6 @@ const realizarCambio = async () => {
             selectSuplentes.appendChild(jugadorSuplente);
         });
 
-        if (selectTitulares.options.length === 0 || selectSuplentes.options.length === 0) {
-            throw new Error('Select elements are empty');
-        }
-
         const button = document.createElement('button');
         button.innerHTML = 'Realizar Cambio';
         button.className = 'btn btn-success mt-3';
@@ -165,43 +159,24 @@ const confirmarCambio = async () => {
         let selectTitulares = document.getElementById('selectTitulares');
         let selectSuplentes = document.getElementById('selectSuplentes');
 
-        if (!selectTitulares || !selectSuplentes) {
-            throw new Error('Select elements not found');
-        }
-
         const jugadorEntranteID = parseInt(selectSuplentes.value);
         const jugadorSalienteID = parseInt(selectTitulares.value);
 
-        if (isNaN(jugadorEntranteID) || isNaN(jugadorSalienteID)) {
-            throw new Error('Invalid player ID');
-        }
-
         let jugadores = obtenerJugadoresLocalStorage();
-
-        if (!Array.isArray(jugadores)) {
-            throw new Error('Invalid player list from local storage');
-        }
 
         let jugadorEntrante = jugadores.find(jugador => jugador.id === jugadorEntranteID);
         let jugadorSaliente = jugadores.find(jugador => jugador.id === jugadorSalienteID);
 
-        if (!jugadorEntrante || !jugadorSaliente) {
-            throw new Error('Player not found');
-        }
-
-        console.log('Jugador entrante antes de cambio:', jugadorEntrante);
-        console.log('Jugador saliente antes de cambio:', jugadorSaliente);
-
         jugadorEntrante.estado = 'Titular';
         jugadorSaliente.estado = 'Suplente';
-
-        console.log('Jugador entrante después de cambio:', jugadorEntrante);
-        console.log('Jugador saliente después de cambio:', jugadorSaliente);
 
         actualizarJugadorLocalStorage(jugadorEntrante);
         actualizarJugadorLocalStorage(jugadorSaliente);
 
-        await listarJugadores();
+        listarJugadores();
+        await new Promise(resolve => setInterval(resolve, 1000));
+        // Mostrar un mensaje de éxito
+        alert('Los cambios ingresaron correctamente.');
     } catch (error) {
         console.error('Error:', error.message);
     }
